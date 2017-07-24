@@ -17,7 +17,7 @@ import {
 const GettingStartedGoogleMap = withGoogleMap(props => (
   <GoogleMap
     ref={props.onMapLoad}
-    defaultZoom={6}
+    defaultZoom={5}
     center={{ lat: 20.5937, lng: 78.9629 }}
     onClick={props.onMapClick}
   >
@@ -48,15 +48,16 @@ export default class GettingStartedExample extends Component {
           };
           this.onChange = (address) => this.setState({ address })
 
-        //handleMapClick = this.handleMapClick.bind(this);
-        //handleMarkerRightClick = this.handleMarkerRightClick.bind(this);
-
     }
     handleFormSubmit(event){
         event.preventDefault()
         geocodeByAddress(this.state.address)
           .then(results => getLatLng(results[0]))
           .then(latLng => {
+            this.setState({
+              markers: [],
+
+                })
                 const nextMarkers = [
               ...this.state.markers,
               {
@@ -69,6 +70,17 @@ export default class GettingStartedExample extends Component {
               markers: nextMarkers,
                 })
             console.log(this.state.markers)
+            var bounds = new google.maps.LatLngBounds();
+
+            console.log("bounds", bounds)
+
+             bounds.extend(this.state.markers[0].position);
+
+
+            this._mapComponent.fitBounds(bounds);
+            this._mapComponent.getZoom();
+            console.log(this._mapComponent.getZoom())
+
             })
           .catch(error => console.error('Error', error))
 
@@ -77,13 +89,17 @@ export default class GettingStartedExample extends Component {
 
   handleMapLoad(map) {
     this._mapComponent = map;
-    console.log('map:  ', map)
+    console.log('map:  ', map, 'this._:  ', this)
 
     }
 
 
 
   handleMapClick(event) {
+    this.setState({
+              markers: [],
+
+                })
     const nextMarkers = [
       ...this.state.markers,
       {
@@ -95,13 +111,21 @@ export default class GettingStartedExample extends Component {
     this.setState({
       markers: nextMarkers,
     });
+    console.log(this.state.markers)
+    var bounds = new google.maps.LatLngBounds();
+    console.log(bounds)
 
+     bounds.extend(this.state.markers[0].position);
+
+
+    this._mapComponent.fitBounds(bounds);
+/*
     if (nextMarkers.length === 3) {
       this.props.toast(
         `Right click on the marker to remove it`,
         `Also check the code!`
       );
-    }
+    }*/
   }
 
   handleMarkerRightClick(targetMarker) {
@@ -158,7 +182,6 @@ const AutocompleteItem = ({ suggestion }) => (<div><i className="fa fa-map-marke
                 classNames={cssClasses}
                 styles={myStyles}
                 autocompleteItem={AutocompleteItem}
-                onEnterKeyDown={this.handleEnter.bind(this)}
                  />
                  <button type="submit">Submit</button>
       </form>
